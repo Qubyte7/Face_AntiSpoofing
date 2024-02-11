@@ -4,6 +4,7 @@ import cvzone
 ##############################
 offsetPercentforH = 50
 offsetPercentforw = 10
+confidence = 0.85
 ##############################
 # Initialize the webcam
 # '2' means the third camera connected to the computer, usually 0 refers to the built-in webcam
@@ -30,11 +31,12 @@ while True:
     if bboxs:
         # Loop through each bounding box
         for bbox in bboxs:
-            # bbox contains 'id', 'bbox', 'score', 'center'
-
-            # ---- Get Data  ---- #
             center = bbox["center"]
             x, y, w, h = bbox['bbox']
+            #SCORE
+            score = bbox["score"][0]
+        if score > confidence:
+            #OFFSET ADDING
             offsetPixelsforw = int((offsetPercentforw / 100) * w)
             # Adjust the x coordinate and width
             x -= offsetPixelsforw
@@ -48,16 +50,13 @@ while True:
             h += offsetPixelsforh + 30
             # Ensure height is not negative
             h = max(0, h)
-
             # Calculate pt2
             pt2 = (x + w, y + h)
-
-            # Draw rectangle
-
-
+            blurValue = int (cv2.Laplacian(img,cv2.CV_64F).var())
             score = int(bbox['score'][0] * 100)
             cvzone.putTextRect(img, f'{score}%', (x, y - 10))
             cvzone.cornerRect(img, (x, y, w, h))
+            cvzone.putTextRect(img,f'blur:{blurValue}',(x-120,y+20),2,2)
 
     # Display the image in a window named 'Image'
     cv2.imshow("Image", img)
