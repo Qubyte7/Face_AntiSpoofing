@@ -1,7 +1,10 @@
 from cvzone.FaceDetectionModule import FaceDetector
 import cv2
 import cvzone
-
+##############################
+offsetPercentforH = 50
+offsetPercentforw = 10
+##############################
 # Initialize the webcam
 # '2' means the third camera connected to the computer, usually 0 refers to the built-in webcam
 cap = cv2.VideoCapture(0)
@@ -32,14 +35,34 @@ while True:
             # ---- Get Data  ---- #
             center = bbox["center"]
             x, y, w, h = bbox['bbox']
-            score = int(bbox['score'][0] * 100)
+            offsetPixelsforw = int((offsetPercentforw / 100) * w)
+            # Adjust the x coordinate and width
+            x -= offsetPixelsforw
+            w += 2 * offsetPixelsforw
+            # Ensure width is not negative
+            w = max(0, w)
+            # Calculate offset in pixels for height
+            offsetPixelsforh = int((offsetPercentforH / 100) * h)
+            # Adjust the y coordinate and height
+            y -= offsetPixelsforh
+            h += offsetPixelsforh + 30
+            # Ensure height is not negative
+            h = max(0, h)
 
-            # ---- Draw Data  ---- #
-            cv2.circle(img, center, 5, (255, 0, 255), cv2.FILLED)
+            # Calculate pt2
+            pt2 = (x + w, y + h)
+
+            # Draw rectangle
+
+
+            score = int(bbox['score'][0] * 100)
             cvzone.putTextRect(img, f'{score}%', (x, y - 10))
             cvzone.cornerRect(img, (x, y, w, h))
 
     # Display the image in a window named 'Image'
     cv2.imshow("Image", img)
     # Wait for 1 millisecond, and keep the window open
-    cv2.waitKey(1)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+cap.release()
+cv2.destroyAllWindows()
